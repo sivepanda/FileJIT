@@ -1,7 +1,0 @@
-This directory appears to contain files related to a sorting task, with the most recent content being in the Shakespeare subdirectory and an older version of the same directory structure present.
-
-Its likely purpose is to organize and manage a specific automated sorting process.
-
-The contents of this directory relate to each other as they are both part of the autosort system, sharing similar directory structures and file organization.
-
-This directory pertains to the subject matter of programming or computer science, specifically the task of automating data organization.

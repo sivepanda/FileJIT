@@ -47,7 +47,7 @@ def search_files(query, index, file_paths):
 
 
 def main():
-    base_path = "C:/Users/darre/VSCode Projects/8vcHackathon/testdirectory"  # Root directory to scan
+    base_path = "./../root"  # Root directory to scan
     print("Generating embeddings for files...")
     index, file_paths = generate_embeddings(base_path)
 
@@ -59,5 +59,5 @@ def main():
         print("\nTop 3 matches:")
         for i, (file_path, distance) in enumerate(results):
             print(f"{i + 1}. {file_path} (Distance: {distance})")
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

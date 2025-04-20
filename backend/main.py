@@ -4,8 +4,13 @@ import shutil
 import requests
 from folder import Folder
 from fileClassifier import FileClassifier
+# import filesearch as fl
 
 autosort_path="./../autosort"
+
+# res = input("Would you like to search for a file or add a file")
+# if res == "s":
+#     fl.main()
 
 
 def get_new_folder():
