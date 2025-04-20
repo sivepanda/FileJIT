@@ -74,16 +74,32 @@ class FileClassifier:
                 return file_path, FileClassifier.read_file(file_path)
             time.sleep(1)
 
+
+    @staticmethod
+    def get_desc(path):
+        desc_path = os.path.join(path, "read.txt")
+        desc_content = FileClassifier.read_file(desc_path)
+        return desc_content
+
+
+
     @staticmethod
     def get_context(path):
+        FOLDER_PATH = path
+
+        #current folder
         context = ""
-        folders = [f for f in os.listdir(path)
-                   if os.path.isdir(os.path.join(path, f))]
 
-        desc_path = os.path.join(path, "read.txt")
-        context += FileClassifier.read_file(desc_path)
+        folders = [f for f in os.listdir(FOLDER_PATH) if os.path.isdir(os.path.join(FOLDER_PATH, f))]
+        folders = [f for f in folders if os.path.exists(os.path.join(os.path.join(path, f), "read.txt"))]
 
-        return context.strip(), len(folders) > 0
+        for folder in folders:
+            full_folder_path = os.path.join(path, folder)
+            desc_path = os.path.join(full_folder_path, "read.txt")
+            desc_content = FileClassifier.read_file(desc_path)
+            context += f"\n./{folder}: \n{desc_content}\n\n"
+
+        return context, folders
 
     @staticmethod
     def move(old, new, content):
@@ -94,22 +110,20 @@ class FileClassifier:
                 print("DIR UPDATE)")
                 shutil.move(old, os.path.join(new, os.path.basename(old)))
                 print(f"📦 Moved file to: {new}")
-                FileClassifier.update_folder(new, content, old)
+                FileClassifier.update(new, content, old)
             else:
                 print("REG UPDATE")
                 shutil.move(old, os.path.join(new, os.path.basename(old)))
                 print(f"📦 Moved file to: {new}")
                 FileClassifier.update(new, content, old)
 
-
-            
             
         else:
             print("do it yourself then")
 
     @staticmethod
     def update(path, content, old):
-        context, _ = FileClassifier.get_context(path)
+        context = FileClassifier.get_desc(path)
         update_message = f"""
 You’re a file classifier. Below is the current description of the folder. A new file has been moved into this folder
 update the old description to reflect the addition of this new file. KEEP THE RESPONSE WITHIN 10 LINES TOTAL.
@@ -131,35 +145,41 @@ New file:
                 f.write(response)
 
 
-    @staticmethod
-    def update_folder(path, content, old):
-        #get name of the subfile
-        lastindex = max(old.rfind("/"), old.rfind("\\"))
-        subfile = old[lastindex + 1:]
+#     @staticmethod
+#     def update_folder(path, content, old):
+#         #get name of the subfile
+#         lastindex = max(old.rfind("/"), old.rfind("\\"))
+#         subfile = old[lastindex + 1:]
 
-        summary_message = f"""
-This is a description of what all files and subfolders are contained in this directory. 
-Summarize it into 4 lines max. Make it brief and dont waste words like "This current directory" Just say the content
+#         summary_message = f"""
+# This is a description of what all files and subfolders are contained in this directory. 
+# Summarize it into 4 lines max. Make it brief and dont waste words like "This current directory" Just say the content
 
-DESCRIPTION:
-{content}
-"""
-        print(summary_message)
-        response = FileClassifier.send(summary_message)
-        print(f"SUMMARY: {response}")
+# DESCRIPTION:
+# {content}
+# """
+#         print(summary_message)
+#         response = FileClassifier.send(summary_message)
+#         print(f"SUMMARY: {response}")
 
-        with open(os.path.join(path, "read.txt"), 'a', encoding='utf-8') as f:
-            f.write(f"\n\n./{subfile}")
-            f.write('\n' + response)
-            
+#         with open(os.path.join(path, "read.txt"), 'a', encoding='utf-8') as f:
+#             f.write(f"\n\n./{subfile}")
+#             f.write('\n' + response)
+
+        
+
     @staticmethod
     def classify(path, contents):
         current_path = FileClassifier.BASE_PATH
 
         while True:
-            context, has_subfolders = FileClassifier.get_context(current_path)
-            if not has_subfolders:
+            context, subfolders = FileClassifier.get_context(current_path)
+            if not subfolders:
                 break
+            if len(subfolders) == 1:
+                current_path = os.path.join(current_path, subfolders[0])
+                continue
+
 
             prompt = f"""
 You're a file classifier. Below is a directory's descriptions with its subfolder descriptions.
@@ -180,17 +200,10 @@ RETURN ONLY THE MOST RELEVANT DIRECTORY NAME OR "./". NO EXPLANATION
             if response == "":
                 break
 
-            next_path = os.path.join(current_path, response)
-            print("SEEING IF: " + next_path, current_path)
+            current_path = os.path.join(current_path, response)
 
-            if os.path.isdir(next_path):
-                current_path = next_path
-            else:
-                print(f"⚠️ Invalid directory suggested: {response}. Staying in current directory.")
-                break
 
         FileClassifier.move(path, current_path, contents)
 
 
 # Run script
-# new_file = FileClassifier("./../autosort")
