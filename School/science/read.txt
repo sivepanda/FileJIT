@@ -1,0 +1,1 @@
+This folder contains all the science topics for the persons schoolwork. Subjects include chemistry and biology and code for each of them.
