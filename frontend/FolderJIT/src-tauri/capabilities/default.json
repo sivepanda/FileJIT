@@ -33,6 +33,8 @@
         }
       ]
     },
-    "dialog:default"
+    "dialog:default",
+    "store:default",
+    "store:default"
   ]
 }
