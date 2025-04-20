@@ -65,6 +65,8 @@
 from sentence_transformers import SentenceTransformer
 import faiss
 import os
+import PyPDF2  
+from docx import Document  
 
 class EmbeddingHandler:
     def __init__(self, base_path):

@@ -1,7 +1,7 @@
 # 8vcHackathon
 
 ## Overview
-The **8vcHackathon** project is a file search and retrieval system that leverages AI-powered embeddings and similarity search to classify/organize files into a file directory, as well as find the most relevant files based on conversational prompting. It uses **FAISS** (Facebook AI Similarity Search) for efficient vector-based similarity search and **SentenceTransformers** for generating embeddings from file contents.
+The **FileJIT** project is a file search and retrieval system that leverages AI-powered embeddings and similarity search to classify/organize files into a file directory, as well as find the most relevant files based on conversational prompting. It uses **FAISS** (Facebook AI Similarity Search) for efficient vector-based similarity search and **SentenceTransformers** for generating embeddings from file contents.
 
 This project is designed to handle human-readable files and provide ranked suggestions for the closest matches based on a user-provided query.
 
