@@ -33,7 +33,7 @@
 
 
 <style>
-    input,
+  input,
   button {
     border-radius: 12px;
     border: 1px solid transparent;

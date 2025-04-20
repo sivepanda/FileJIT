@@ -64,7 +64,7 @@ class Folder:
         SUBDIRECTORY CONTENTS:
         {context}
         
-        Using ONLY the information above, write a single paragraph (5-7 sentences) describing:
+        Using ONLY the information above, write FOUR LINES describing:
         1. What this directory appears to contain
         2. What its likely purpose is
         3. How the contents relate to each other

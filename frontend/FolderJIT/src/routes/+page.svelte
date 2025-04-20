@@ -1,6 +1,7 @@
 <script lang="ts">
   import { open } from "@tauri-apps/plugin-dialog";
-  import FolderSelector from "../components/FolderSelector.svelte";
+  import FileUpload from "../components/FileUpload.svelte";
+  // import FolderSelector from "../components/FolderSelector.svelte";
 
   async function selectFile() {
     const selected = await open({
@@ -19,7 +20,6 @@
 <main class="container">
   <h1>Welcome to <span class="highlht">FolderJIT</span></h1>
 
-  <FolderSelector />
   
 
 

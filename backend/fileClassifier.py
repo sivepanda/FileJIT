@@ -90,14 +90,25 @@ class FileClassifier:
         print(f"Are you sure you want to move {old} to {new}")
         response = input("ARE YOU? ")
         if response == 'y':
-            shutil.move(old, os.path.join(new, os.path.basename(old)))
-            print(f"📦 Moved file to: {new}")
-            FileClassifier.update(new, content)
+            if os.path.isdir(old):
+                print("DIR UPDATE)")
+                shutil.move(old, os.path.join(new, os.path.basename(old)))
+                print(f"📦 Moved file to: {new}")
+                FileClassifier.update_folder(new, content, old)
+            else:
+                print("REG UPDATE")
+                shutil.move(old, os.path.join(new, os.path.basename(old)))
+                print(f"📦 Moved file to: {new}")
+                FileClassifier.update(new, content, old)
+
+
+            
+            
         else:
             print("do it yourself then")
 
     @staticmethod
-    def update(path, content):
+    def update(path, content, old):
         context, _ = FileClassifier.get_context(path)
         update_message = f"""
 You’re a file classifier. Below is the current description of the folder. A new file has been moved into this folder
@@ -108,13 +119,39 @@ Old description:
 {context}
 
 New file:
-{content}"""
+{content}
+"""
         print(update_message)
         response = FileClassifier.send(update_message)
         print(f"NEW README: {response}")
 
-        
+        res = input("replace read.txt in this directory?")
+        if res == 'y':
+            with open(os.path.join(path, "read.txt"), 'w', encoding='utf-8') as f:
+                f.write(response)
 
+
+    @staticmethod
+    def update_folder(path, content, old):
+        #get name of the subfile
+        lastindex = max(old.rfind("/"), old.rfind("\\"))
+        subfile = old[lastindex + 1:]
+
+        summary_message = f"""
+This is a description of what all files and subfolders are contained in this directory. 
+Summarize it into 4 lines max. Make it brief and dont waste words like "This current directory" Just say the content
+
+DESCRIPTION:
+{content}
+"""
+        print(summary_message)
+        response = FileClassifier.send(summary_message)
+        print(f"SUMMARY: {response}")
+
+        with open(os.path.join(path, "read.txt"), 'a', encoding='utf-8') as f:
+            f.write(f"\n\n./{subfile}")
+            f.write('\n' + response)
+            
     @staticmethod
     def classify(path, contents):
         current_path = FileClassifier.BASE_PATH
