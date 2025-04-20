@@ -1,9 +1,12 @@
 from sentence_transformers import SentenceTransformer
 import faiss
 import os
+import PyPDF2  
+from docx import Document  
 
 # Initialize the embedding model
 model = SentenceTransformer('all-MiniLM-L6-v2')  # Lightweight and fast
+
 
 def generate_embeddings(base_path):
     file_paths = []
@@ -16,10 +19,27 @@ def generate_embeddings(base_path):
             file_path = os.path.join(root, file)
             print("file path: ", file_path)
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                    file_paths.append(file_path)
+                if file.lower().endswith('.pdf'):  # Check if the file is a PDF
+                    # Extract text from PDF
+                    with open(file_path, 'rb') as pdf_file:
+                        reader = PyPDF2.PdfReader(pdf_file)
+                        content = ""
+                        for page in reader.pages:
+                            content += page.extract_text()
+                        file_contents.append(content)
+                        file_paths.append(file_path)
+                elif file.lower().endswith('.docx'):  # Check if the file is a Word document
+                    # Extract text from Word document
+                    doc = Document(file_path)
+                    content = "\n".join([paragraph.text for paragraph in doc.paragraphs])
                     file_contents.append(content)
+                    file_paths.append(file_path)
+                else:
+                    # Handle plain text files
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        file_contents.append(content)
+                        file_paths.append(file_path)
             except Exception as e:
                 print(f"Error reading {file_path}: {e}")
 
