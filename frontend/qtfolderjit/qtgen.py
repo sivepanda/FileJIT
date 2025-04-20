@@ -8,6 +8,11 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 
+# Import the semantic search module
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'backend')))
+
+from filesearch import EmbeddingHandler
+
 # Resolve target folder path relative to script
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TARGET_FOLDER = os.path.abspath(os.path.join(BASE_DIR, '..', '..', 'autosort'))
@@ -34,6 +39,17 @@ class ProcessingWorker(QThread):
             self.done.emit("✅ Done")
         except Exception as e:
             self.done.emit(f"❌ Error: {str(e)}")
+
+class EmbeddingWorker(QThread):
+    done = pyqtSignal(bool)
+    
+    def __init__(self, embedding_handler):
+        super().__init__()
+        self.embedding_handler = embedding_handler
+    
+    def run(self):
+        success = self.embedding_handler.generate_embeddings()
+        self.done.emit(success)
 
 class FileDropWidget(QWidget):
     def __init__(self):
@@ -92,41 +108,81 @@ class FileDropWidget(QWidget):
         self.no_button.setVisible(True)
 
 class SearchWidget(QWidget):
-    def __init__(self):
+    def __init__(self, embedding_handler):
         super().__init__()
+        self.embedding_handler = embedding_handler
+        
+        self.status_label = QLabel("Initializing semantic search engine...")
+        
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("🔍 Search in autosort folder...")
-        self.search_input.returnPressed.connect(self.perform_search)
+        self.search_input.setPlaceholderText("🔍 Enter your search query...")
+        self.search_input.setEnabled(False)  # Disable until embeddings are ready
+        self.search_input.returnPressed.connect(self.perform_semantic_search)
+        
+        self.search_button = QPushButton("Search")
+        self.search_button.setEnabled(False)  # Disable until embeddings are ready
+        self.search_button.clicked.connect(self.perform_semantic_search)
+        
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(self.search_input)
+        search_layout.addWidget(self.search_button)
 
         self.result_list = QListWidget()
 
         layout = QVBoxLayout()
-        layout.addWidget(self.search_input)
+        layout.addWidget(self.status_label)
+        layout.addLayout(search_layout)
         layout.addWidget(self.result_list)
         self.setLayout(layout)
+        
+        # Start the embedding generation process
+        self.embedding_worker = EmbeddingWorker(self.embedding_handler)
+        self.embedding_worker.done.connect(self.on_embeddings_ready)
+        self.embedding_worker.start()
 
-    def perform_search(self):
-        query = self.search_input.text().lower()
-        self.result_list.clear()
+    def on_embeddings_ready(self, success):
+        if success:
+            self.status_label.setText("Semantic search ready. Type your query to find similar files.")
+            self.search_input.setEnabled(True)
+            self.search_button.setEnabled(True)
+        else:
+            self.status_label.setText("❌ Failed to generate embeddings. Check console for errors.")
 
-        if not os.path.isdir(TARGET_FOLDER):
-            self.result_list.addItem("❌ autosort folder not found.")
+    def perform_semantic_search(self):
+        query = self.search_input.text()
+        if not query:
             return
-
-        files = os.listdir(TARGET_FOLDER)
-        for file in files:
-            if query in file.lower():
-                self.result_list.addItem(file)
+            
+        self.result_list.clear()
+        
+        try:
+            results = self.embedding_handler.search_files(query)
+            
+            if not results:
+                self.result_list.addItem("No matching files found.")
+                return
+                
+            self.result_list.addItem("Top 3 matches:")
+            for i, (file_path, distance) in enumerate(results):
+                self.result_list.addItem(f"{i + 1}. {file_path} (Distance: {distance:.4f})")
+        except Exception as e:
+            self.result_list.addItem(f"Error during search: {str(e)}")
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("📂 File Processor & Search Tool")
-        self.setGeometry(300, 300, 500, 300)
+        self.setWindowTitle("📂 Semantic File Search Tool")
+        self.setGeometry(300, 300, 700, 400)
+        
+        # Path for files to search (update this to your root directory)
+        self.base_path = "./../../root"  # Root directory to scan
+        
+        # Create the embedding handler
+        self.embedding_handler = EmbeddingHandler(self.base_path)
 
         self.tabs = QTabWidget()
         self.tabs.addTab(FileDropWidget(), "📤 Drop File")
-        self.tabs.addTab(SearchWidget(), "🔍 Search")
+        self.tabs.addTab(SearchWidget(self.embedding_handler), "🔍 Semantic Search")
 
         layout = QVBoxLayout()
         layout.addWidget(self.tabs)
