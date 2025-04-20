@@ -34,17 +34,16 @@ def generate_embeddings(base_path):
     return index, file_paths
 
 
-
 def search_files(query, index, file_paths):
     # Generate embedding for the query
     query_embedding = model.encode([query], convert_to_tensor=False)
 
-    # Search for the closest match
+    # Search for the top 3 closest matches
     distances, indices = index.search(query_embedding, k=3)  # Retrieve top 3 closest matches
 
-    # Get the closest file path
-    closest_file = file_paths[indices[0][0]]
-    return closest_file, distances[0][0]
+    # Get the top 3 file paths and their distances
+    results = [(file_paths[indices[0][i]], distances[0][i]) for i in range(len(indices[0]))]
+    return results
 
 
 def main():
@@ -55,8 +54,10 @@ def main():
     print("Embeddings generated. Ready for search.")
     while True:
         query = input("\nEnter your search query: ")
-        closest_file, distance = search_files(query, index, file_paths)
-        print(f"Closest match: {closest_file} (Distance: {distance})")
+        results = search_files(query, index, file_paths)
 
+        print("\nTop 3 matches:")
+        for i, (file_path, distance) in enumerate(results):
+            print(f"{i + 1}. {file_path} (Distance: {distance})")
 if __name__ == "__main__":
     main()
