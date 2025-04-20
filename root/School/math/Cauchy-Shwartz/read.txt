@@ -1,0 +1,1 @@
+Contains information about the cauchy shwartz inequality
