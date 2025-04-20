@@ -9,10 +9,12 @@ def generate_embeddings(base_path):
     file_paths = []
     file_contents = []
 
+    print(base_path)
     # Traverse the file system
     for root, _, files in os.walk(base_path):
         for file in files:
             file_path = os.path.join(root, file)
+            print("file path: ", file_path)
             try:
                 with open(file_path, 'r', encoding='utf-8') as f:
                     content = f.read()
@@ -38,7 +40,7 @@ def search_files(query, index, file_paths):
     query_embedding = model.encode([query], convert_to_tensor=False)
 
     # Search for the closest match
-    distances, indices = index.search(query_embedding, k=1)  # Retrieve top-1 match
+    distances, indices = index.search(query_embedding, k=3)  # Retrieve top 3 closest matches
 
     # Get the closest file path
     closest_file = file_paths[indices[0][0]]
@@ -46,7 +48,7 @@ def search_files(query, index, file_paths):
 
 
 def main():
-    base_path = "./autosort"  # Root directory to scan
+    base_path = "C:/Users/darre/VSCode Projects/8vcHackathon/testdirectory"  # Root directory to scan
     print("Generating embeddings for files...")
     index, file_paths = generate_embeddings(base_path)
 
@@ -55,3 +57,6 @@ def main():
         query = input("\nEnter your search query: ")
         closest_file, distance = search_files(query, index, file_paths)
         print(f"Closest match: {closest_file} (Distance: {distance})")
+
+if __name__ == "__main__":
+    main()
