@@ -1,6 +1,6 @@
-# Tauri + SvelteKit + TypeScript
+# Tauri + SvelteKit
 
-This template should help get you started developing with Tauri, SvelteKit and TypeScript in Vite.
+This template should help get you started developing with Tauri and SvelteKit in Vite.
 
 ## Recommended IDE Setup
 
