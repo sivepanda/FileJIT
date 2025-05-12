@@ -1,9 +1,11 @@
-# 8vcHackathon
+# FileJIT
 
 ## Overview
-The **FileJIT** project is a file search and retrieval system that leverages AI-powered embeddings and similarity search to classify/organize files into a file directory, as well as find the most relevant files based on conversational prompting. It uses **FAISS** (Facebook AI Similarity Search) for efficient vector-based similarity search and **SentenceTransformers** for generating embeddings from file contents.
+The **FileJIT** project is a file search and retrieval system that leverages AI-powered embeddings and similarity search to classify/organize files into a file directory, as well as find the most relevant files based on conversational prompting.
 
 This project is designed to handle human-readable files and provide ranked suggestions for the closest matches based on a user-provided query.
+
+This repository holds the most up-to-date version of the software initially developed by myself, as well as the team I was on for the *8vc Hackathon* at Duke.
 
 ---
 
@@ -17,6 +19,7 @@ This project is designed to handle human-readable files and provide ranked sugge
 ---
 
 ## Technologies Used
+- **Tauri / Svelte**
 - **Python 3.12**
 - **FAISS**: For similarity search and clustering.
 - **SentenceTransformers**: For generating embeddings from text.
