@@ -59,7 +59,7 @@ class FileClassifier:
             return FileClassifier.extract_text_from_pdf(file_path)
         else:
             #assume its a folder now
-            new_file_path = os.path.join(file_path, "read.txt")
+            new_file_path = os.path.join(file_path, "description.fjit")
             return FileClassifier.read_file(new_file_path)
 
     @staticmethod
@@ -77,7 +77,7 @@ class FileClassifier:
 
     @staticmethod
     def get_desc(path):
-        desc_path = os.path.join(path, "read.txt")
+        desc_path = os.path.join(path, "description.fjit")
         desc_content = FileClassifier.read_file(desc_path)
         return desc_content
 
@@ -94,7 +94,7 @@ class FileClassifier:
 
         for folder in folders:
             full_folder_path = os.path.join(path, folder)
-            desc_path = os.path.join(full_folder_path, "read.txt")
+            desc_path = os.path.join(full_folder_path, "description.fjit")
             desc_content = FileClassifier.read_file(desc_path)
             context += f"\n./{folder}: \n{desc_content}\n\n"
 
@@ -138,9 +138,9 @@ New file:
         response = FileClassifier.send(update_message)
         print(f"NEW README: {response}")
 
-        res = input("replace read.txt in this directory?")
+        res = input("replace description.fjit in this directory?")
         if res == 'y':
-            with open(os.path.join(path, "read.txt"), 'w', encoding='utf-8') as f:
+            with open(os.path.join(path, "description.fjit"), 'w', encoding='utf-8') as f:
                 f.write(response)
 
 
@@ -161,7 +161,7 @@ New file:
 #         response = FileClassifier.send(summary_message)
 #         print(f"SUMMARY: {response}")
 
-#         with open(os.path.join(path, "read.txt"), 'a', encoding='utf-8') as f:
+#         with open(os.path.join(path, "description.fjit"), 'a', encoding='utf-8') as f:
 #             f.write(f"\n\n./{subfile}")
 #             f.write('\n' + response)
 

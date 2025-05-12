@@ -4,7 +4,7 @@ import shutil
 import requests
 
 class Folder:
-    def __init__(self, autosort_path="./../autosort", model="llama3.2", ollama_url="http://localhost:11434/api/generate"):
+    def __init__(self, autosort_path="./../autosort", model="gemma3", ollama_url="http://localhost:11434/api/generate"):
         self.autosort_path = autosort_path
         self.model = model
         self.ollama_url = ollama_url
@@ -37,23 +37,6 @@ class Folder:
             contents = file.read()
             return contents
     
-    # def get_new_folder(self):
-    #     """Watch the autosort directory for a new folder"""
-    #     print(f"👀 Watching folder: {self.autosort_path}")
-
-    #     item_name = None
-    #     while not item_name:
-    #         items = [f for f in os.listdir(self.autosort_path) if os.path.isdir(os.path.join(self.autosort_path, f))]
-    #         if items:
-    #             item_name = items[0]
-    #             item_path = os.path.join(self.autosort_path, item_name)
-    #         else:
-    #             time.sleep(1)
-
-    #     folder_path = os.path.join(self.autosort_path, item_name)
-    #     print(f"\n✅ Folder detected: {item_name}\n")
-    #     return folder_path
-    
     def write_desc(self, context, path_name):
         """Generate directory description using Ollama"""
         system_prompt = f"""
@@ -68,7 +51,14 @@ class Folder:
         1. What this directory appears to contain
         2. What its likely purpose is
         3. How the contents relate to each other
-        4. What subject matter or field this directory pertains to
+        4. What subject matter or field this directory pertains to. 
+        
+        Use the following schema:
+        ./ [directory description]
+        ./[subdirectory0] [subdirectory description]
+        ./[subdirectory1] [subdirectory description]
+        [continue for all subfolders]
+        ...
         
         Focus on describing the factual contents. Do not use phrases like "I see" or "I notice" or "I'm ready to help".
         Do not ask for more information. Do not include any placeholder responses.
@@ -88,7 +78,7 @@ class Folder:
             for dir_name in dirs:
                 dir_path = os.path.join(folder_path, dir_name)
                 
-                text_dir_path = os.path.join(dir_path, "read.txt")
+                text_dir_path = os.path.join(dir_path, "description.fjit")
                 if os.path.exists(text_dir_path):
                     context += str(dir_path) + " " + self.read_file(text_dir_path) + "\n"
                 elif all_folders:
@@ -122,7 +112,7 @@ class Folder:
         if not os.path.isdir(folder_path):
             return ""
 
-        read_me = os.path.join(folder_path, "read.txt")
+        read_me = os.path.join(folder_path, "description.fjit")
         description = ""
         
         if not os.path.exists(read_me):
@@ -150,14 +140,3 @@ class Folder:
             description = self.read_file(read_me)
         
         return description
-    
-    # def run(self, process_all_subfolders=None):
-    #     """Main method to run the autosort process"""
-    #     # folder_path = self.get_new_folder()
-    #     return self.generate_text(folder_path, process_all_subfolders)
-
-
-# If run directly, demonstrate usage
-# if __name__ == "__main__":
-#     sorter = Folder()
-#     sorter.run()

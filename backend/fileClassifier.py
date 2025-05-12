@@ -13,7 +13,7 @@ class FileClassifier:
     def __init__(self, path):
         self.path = path
         self.content = FileClassifier.read_file(path)
-        FileClassifier.classify(self.path, self.content)
+        FileClassifier.classify(self.path, self.content, False)
 
 
     @staticmethod
@@ -59,7 +59,7 @@ class FileClassifier:
             return FileClassifier.extract_text_from_pdf(file_path)
         else:
             #assume its a folder now
-            new_file_path = os.path.join(file_path, "read.txt")
+            new_file_path = os.path.join(file_path, "description.fjit")
             return FileClassifier.read_file(new_file_path)
 
     @staticmethod
@@ -77,7 +77,7 @@ class FileClassifier:
 
     @staticmethod
     def get_desc(path):
-        desc_path = os.path.join(path, "read.txt")
+        desc_path = os.path.join(path, "description.fjit")
         desc_content = FileClassifier.read_file(desc_path)
         return desc_content
 
@@ -91,16 +91,35 @@ class FileClassifier:
         context = ""
 
         folders = [f for f in os.listdir(FOLDER_PATH) if os.path.isdir(os.path.join(FOLDER_PATH, f))]
-        folders = [f for f in folders if os.path.exists(os.path.join(os.path.join(path, f), "read.txt"))]
+        folders = [f for f in folders if os.path.exists(os.path.join(os.path.join(path, f), "description.fjit"))]
 
         for folder in folders:
             full_folder_path = os.path.join(path, folder)
-            desc_path = os.path.join(full_folder_path, "read.txt")
+            desc_path = os.path.join(full_folder_path, "description.fjit")
             desc_content = FileClassifier.read_file(desc_path)
             context += f"\n./{folder}: \n{desc_content}\n\n"
 
         return context, folders
 
+    
+    @staticmethod
+    def get_context_dict(path):
+        FOLDER_PATH = path
+
+        #current folder
+        context = dict()
+
+        folders = [f for f in os.listdir(FOLDER_PATH) if os.path.isdir(os.path.join(FOLDER_PATH, f))]
+        folders = [f for f in folders if os.path.exists(os.path.join(os.path.join(path, f), "description.fjit"))]
+
+        for folder in folders:
+            full_folder_path = os.path.join(path, folder)
+            desc_path = os.path.join(full_folder_path, "description.fjit")
+            desc_content = FileClassifier.read_file(desc_path)
+            context[f"./{folder}"] = desc_content
+
+        return context
+    
     @staticmethod
     def move(old, new, content):
         print(f"Are you sure you want to move {old} to {new}")
@@ -125,51 +144,37 @@ class FileClassifier:
     def update(path, content, old):
         context = FileClassifier.get_desc(path)
         update_message = f"""
-You’re a file classifier. Below is the current description of the folder. A new file has been moved into this folder
-update the old description to reflect the addition of this new file. KEEP THE RESPONSE WITHIN 10 LINES TOTAL.
-Make the entire response better reflect everything in the file. After all, you’ll use this response to classify other files into this folder later.
+            You're a directory classifier. Below is the current description of the directory. A new file has been moved into this directory 
+            update the old description of this directory to be inclusive of this file. Keep the description short, and with the overall same structure.
+            Make the entire response better reflect everything in the file. After all, you'll use this response to classify other files into this folder later.
 
-Old description:
-{context}
+            Focus on describing the factual contents. Do not use phrases like "I see" or "I notice" or "I'm ready to help".
+            Do not ask for more information. Do not include any placeholder responses. Use the following schema for your response:
 
-New file:
-{content}
-"""
+            Use the following schema:
+            ./ [directory description]
+            ./[subdirectory0] [subdirectory description]
+            ./[subdirectory1] [subdirectory description]
+            [continue for all subfolders]...
+
+
+            Old description:
+            {context}
+
+            New file:
+            {content}
+        """
         print(update_message)
         response = FileClassifier.send(update_message)
         print(f"NEW README: {response}")
 
-        res = input("replace read.txt in this directory?")
+        res = input("replace description.fjit in this directory?")
         if res == 'y':
-            with open(os.path.join(path, "read.txt"), 'w', encoding='utf-8') as f:
+            with open(os.path.join(path, "description.fjit"), 'w', encoding='utf-8') as f:
                 f.write(response)
 
-
-#     @staticmethod
-#     def update_folder(path, content, old):
-#         #get name of the subfile
-#         lastindex = max(old.rfind("/"), old.rfind("\\"))
-#         subfile = old[lastindex + 1:]
-
-#         summary_message = f"""
-# This is a description of what all files and subfolders are contained in this directory. 
-# Summarize it into 4 lines max. Make it brief and dont waste words like "This current directory" Just say the content
-
-# DESCRIPTION:
-# {content}
-# """
-#         print(summary_message)
-#         response = FileClassifier.send(summary_message)
-#         print(f"SUMMARY: {response}")
-
-#         with open(os.path.join(path, "read.txt"), 'a', encoding='utf-8') as f:
-#             f.write(f"\n\n./{subfile}")
-#             f.write('\n' + response)
-
-        
-
     @staticmethod
-    def classify(path, contents):
+    def classify(path, contents, llm_enable = True):
         current_path = FileClassifier.BASE_PATH
 
         while True:
@@ -179,26 +184,38 @@ New file:
             if len(subfolders) == 1:
                 current_path = os.path.join(current_path, subfolders[0])
                 continue
+            
+            if llm_enable:
+                prompt = f"""
+                You're a file classifier. Below is a directory's descriptions with its subfolder descriptions.
+                Choose the most relevant subfolder for the new file — or return "./" to keep it in the current folder.
 
+                This is the new file:"{contents}"
 
-            prompt = f"""
-You're a file classifier. Below is a directory's descriptions with its subfolder descriptions.
-Choose the most relevant subfolder for the new file — or return "./" to keep it in the current folder.
+                These are the directory and subdirectory descriptions:"{context}"
 
-This is the new file:"{contents}"
+                RETURN ONLY THE MOST RELEVANT DIRECTORY NAME OR "./". NO EXPLANATION
+                """
+                print(prompt)
+                response = FileClassifier.send(prompt)
+                print(f"🧠 LLM Suggests: {response} inside {current_path}")
+                response = response.strip()
+                response = response.lstrip("./")
 
-These are the directory and subdirectory descriptions:"{context}"
+                if response == "":
+                    break
+            else:
+               from sentence_transformers import SentenceTransformer, util
+               model = SentenceTransformer('all-MiniLM-L6-v2')
+               context = FileClassifier.get_context_dict(current_path) 
+               context["file"] = contents
+               embeddings = {k: model.encode(v, convert_to_tensor=True) for k, v in context.items()}
+               similarities = {
+                   k: util.cos_sim(embeddings["file"], v).item()
+                   for k, v in embeddings.items() if k != "file"
+               }
 
-RETURN ONLY THE MOST RELEVANT DIRECTORY NAME OR "./". NO EXPLANATION
-"""
-            print(prompt)
-            response = FileClassifier.send(prompt)
-            print(f"🧠 LLM Suggests: {response} inside {current_path}")
-            response = response.strip()
-            response = response.lstrip("./")
-
-            if response == "":
-                break
+               response = max(similarities, key=similarities.get)
 
             current_path = os.path.join(current_path, response)
 

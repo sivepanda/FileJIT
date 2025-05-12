@@ -36,10 +36,11 @@
                 await mkdir(appDataDir)
             }
 
-            draggedOver = false;
             await rename(event.payload.paths[0], await path.resolve(appDataDir, filename)).then(() => {
-                draggedOver = false;
+              // draggedOver = false;
             })
+            filestat = ""; 
+            draggedOver = false;
         } else {
             console.log('File drop cancelled');
             draggedOver = false;
@@ -53,7 +54,7 @@
   />
   
   <main>
-    <h1>Welcome to <span>here</span></h1>
+    <h1>Welcome to <span>FileJIT</span></h1>
     <p>Drag and drop a file anywhere on the page. {filestat}</p>
   
   </main>
