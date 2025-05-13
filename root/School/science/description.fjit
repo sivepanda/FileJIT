@@ -1,0 +1,4 @@
+./School/science
+./biology This directory contains DNA sequence data.
+./biology This directory holds the complete genome sequence of Escherichia coli K-12.
+./biology This directory utilizes the NCBI database via the Bio library to access genomic information.

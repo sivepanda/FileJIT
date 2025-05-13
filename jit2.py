@@ -19,7 +19,7 @@ class FileClassifier:
     @staticmethod
     def send(message):
         payload = {
-            "model": "llama3.2",
+            "model": "gemma3",
             "prompt": message,
             "stream": False
         }

@@ -1,0 +1,4 @@
+./School/math contains materials related to Sturm’s and Cauchy’s work.
+./Cauchy-Shwartz holds theorems and proofs concerning integral calculus and real analysis.
+./linear-algebra is a separate directory within the math directory.
+./This directory pertains to mathematical analysis, specifically real analysis and integration theory.

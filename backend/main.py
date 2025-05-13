@@ -7,11 +7,14 @@ from fileClassifier import FileClassifier
 # import filesearch as fl
 
 autosort_path="./../autosort"
+root_path = "./../root"
 
 # res = input("Would you like to search for a file or add a file")
 # if res == "s":
 #     fl.main()
-
+f = Folder()
+f.generate_text(root_path)
+print("done")
 
 def get_new_folder():
     """Watch the autosort directory for a new folder"""
@@ -32,12 +35,12 @@ def get_new_folder():
 
     print(f"\n✅ Folder detected: {item_name}\n")
 
-    text = Folder()
-    text.generate_text(folder_path)
-    classify = FileClassifier(folder_path)
+    classify = FileClassifier(root_path)
+    # text = Folder()
+    # text.generate_text(folder_path)
     print("iteration done")
 
-# get_new_folder()
+get_new_folder()
 
 
 

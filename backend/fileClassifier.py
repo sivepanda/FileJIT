@@ -12,6 +12,7 @@ class FileClassifier:
 
     def __init__(self, path):
         self.path = path
+        self.BASE_PATH= path
         self.content = FileClassifier.read_file(path)
         FileClassifier.classify(self.path, self.content, False)
 
@@ -19,7 +20,7 @@ class FileClassifier:
     @staticmethod
     def send(message):
         payload = {
-            "model": "llama3.2",
+            "model": "gemma3",
             "prompt": message,
             "stream": False
         }
@@ -51,6 +52,8 @@ class FileClassifier:
     @staticmethod
     def read_file(file_path):
         ext = os.path.splitext(file_path)[1].lower()
+        if ext == ".fjit":
+            return FileClassifier.extract_text_from_txt(file_path)
         if ext == ".txt":
             return FileClassifier.extract_text_from_txt(file_path)
         elif ext == ".docx":

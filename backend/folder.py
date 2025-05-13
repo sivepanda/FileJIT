@@ -114,8 +114,10 @@ class Folder:
 
         read_me = os.path.join(folder_path, "description.fjit")
         description = ""
+        print("hello there")
         
         if not os.path.exists(read_me):
+            print("hello there")
             try:
                 with open(read_me, "w") as file:
                     all_folders = False
